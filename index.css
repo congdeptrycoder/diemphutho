@@ -77,11 +77,9 @@ h2 {
     margin-top: 20px;
     /* Giữ lại margin nếu cần */
     /* Thêm transition ở trạng thái cơ bản */
-    transition: opacity 0.5s ease-out, max-height 0.5s ease-out;
+    transition: opacity 0.3s ease-in-out, max-height 0.3s ease-in-out;
     /* Không nên đặt display: none ở đây nếu muốn transition max-height hoạt động */
-    /* Thay vào đó, có thể dùng visibility: hidden; hoặc đợi transition xong mới display: none */
-    visibility: hidden;
-    /* Ẩn nhưng vẫn giữ không gian cho transition */
+
 }
 
 #charts-container.visible {
@@ -89,8 +87,7 @@ h2 {
     max-height: 5000px;
     /* Đặt chiều cao đủ lớn */
     overflow: visible;
-    /* Hoặc auto nếu cần thanh cuộn */
-    visibility: visible;
+
 }
 
 #charts-container h2 {

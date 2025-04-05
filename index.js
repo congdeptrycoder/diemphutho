@@ -10,7 +10,7 @@ const errorMsgElement = document.getElementById('error-msg');
 const rank5Span = document.getElementById('rank5');
 const rank3Span = document.getElementById('rank3');
 const totalStudents = 22137;
-
+//làm sạch web
 function clearResults() {
 
     scoreTable.querySelector('.scorevan').textContent = '-';
@@ -47,13 +47,13 @@ function displayError(message) {
     rank3Span.textContent = `-/${totalStudents}`;
 }
 
-// Hàm tìm hạng trong file đã sắp xếp (tối ưu hơn bằng cách chỉ đọc và tìm)
+// Hàm tìm hạng trong file đã sắp xếp
 const findRankInSortedFile = async (filePath, sbdToFind) => {
     try {
         const response = await fetch(filePath);
         if (!response.ok) {
             console.error(`Lỗi tải file xếp hạng ${filePath}: ${response.status}`);
-            return null; // Lỗi tải file
+            return null;
         }
         const text = await response.text();
         const lines = text.split('\n');
@@ -73,7 +73,7 @@ const findRankInSortedFile = async (filePath, sbdToFind) => {
 
             }
         }
-        return null; // Không tìm thấy SBD trong file này
+        return null;
     } catch (error) {
         console.error(`Lỗi khi xử lý file xếp hạng ${filePath}:`, error);
         return null;
@@ -81,9 +81,8 @@ const findRankInSortedFile = async (filePath, sbdToFind) => {
 };
 // Hàm xử lý dữ liệu dòng từ file .txt
 function parseScoreLine(line) {
-    // Tách SBD và phần dữ liệu điểm bằng dấu phẩy đầu tiên
     const firstCommaIndex = line.indexOf(',');
-    if (firstCommaIndex === -1) return null; // Định dạng không hợp lệ
+    if (firstCommaIndex === -1) return null;
 
     const sbd = line.substring(0, firstCommaIndex).trim();
     const dataPart = line.substring(firstCommaIndex + 1).trim();
@@ -181,7 +180,7 @@ searchButton.addEventListener('click', async () => {
     searchStatus.style.display = 'inline';
 
     try {
-        // Sử dụng fetch để lấy nội dung file txt
+
         const response = await fetch('score_data.txt');
 
         if (!response.ok) {
@@ -201,10 +200,10 @@ searchButton.addEventListener('click', async () => {
             }
         }
 
-        searchStatus.style.display = 'none'; // Ẩn "Đang tìm kiếm..."
+        searchStatus.style.display = 'none';
 
         if (studentData) {
-            // Hiển thị điểm lên bảng
+
 
             scoreTable.querySelector('.scorevan').textContent = studentData.scores['Ngữ văn']?.toFixed(2) || '-';
             scoreTable.querySelector('.scoretoan').textContent = studentData.scores['Toán']?.toFixed(2) || '-';
@@ -212,11 +211,11 @@ searchButton.addEventListener('click', async () => {
             scoreTable.querySelector('.scorekhtn').textContent = studentData.scores['KHTN']?.toFixed(2) || '-';
             scoreTable.querySelector('.scorels').textContent = studentData.scores['LS&&ĐL']?.toFixed(2) || '-';
 
-            // Hiển thị tổng điểm
+
             sum5Span.textContent = `${studentData.total5.toFixed(2)} điểm`;
             sum3Span.textContent = `${studentData.total3.toFixed(2)} điểm`;
 
-            // Cập nhật bảng so sánh
+
             updateComparisonTable(studentData.total3);
             try {
                 const [rank5Result, rank3Result] = await Promise.all([
@@ -224,7 +223,7 @@ searchButton.addEventListener('click', async () => {
                     findRankInSortedFile('sorted_by_total_tva.txt', sbdToSearch)
                 ]);
 
-                // Cập nhật DOM với kết quả xếp hạng
+
                 rank5Span.textContent = rank5Result !== null ? `${rank5Result}/${totalStudents}` : `Không tìm thấy/${totalStudents}`;
                 rank3Span.textContent = rank3Result !== null ? `${rank3Result}/${totalStudents}` : `Không tìm thấy/${totalStudents}`;
 
@@ -235,10 +234,10 @@ searchButton.addEventListener('click', async () => {
             }
             //result box
             resultBox.style.display = 'block';
-            // Lưu dữ liệu sinh viên vừa tìm được để dùng khi bật/tắt biểu đồ
+
             window.lastSearchedStudentData = studentData;
 
-            // Nếu biểu đồ đang hiển thị, cập nhật highlight
+
             if (chartsContainer && chartsContainer.classList.contains('visible') && isChartDataProcessed) {
                 highlightChartsForStudent(studentData);
             }
@@ -256,7 +255,7 @@ searchButton.addEventListener('click', async () => {
     }
 });
 
-// Thêm sự kiện nhấn Enter trên input để tìm kiếm
+
 searchInput.addEventListener('keypress', function (e) {
     if (e.key === 'Enter') {
         searchButton.click();
@@ -293,8 +292,8 @@ const CHART_CONFIG = {
     'Tổng 3 môn': { file: 'score_data.txt', key: 'Tổng Toán, Văn, Anh', bins: 10, range: [0, 30], labels: ["0-3", "3-6", "6-9", "9-12", "12-15", "15-18", "18-21", "21-24", "24-27", "27-30"], canvasId: 'chart-total3' }
 };
 
-let processedChartData = null; // Lưu dữ liệu đã xử lý
-window.scoreCharts = {}; // Lưu các đối tượng Chart.js
+let processedChartData = null;
+window.scoreCharts = {};
 let isChartDataProcessed = false;
 let isProcessingChartData = false;
 
@@ -302,10 +301,7 @@ const chartsContainer = document.getElementById('charts-container');
 const toggleChartsButton = document.getElementById('toggle-charts-button');
 const chartLoadingIndicator = document.getElementById('chart-loading-indicator');
 
-// --- Hàm Xử lý Dữ liệu ---
 
-// Hàm parse dòng điểm (có thể dùng lại hoặc điều chỉnh từ index.js)
-// Đảm bảo nó trả về object với key là tên môn/tổng điểm
 function parseScoreLineForChart(line) {
     const firstCommaIndex = line.indexOf(',');
     if (firstCommaIndex === -1) return null;
@@ -319,9 +315,9 @@ function parseScoreLineForChart(line) {
         const scores = { sbd: sbd };
         scoresArray.forEach(item => {
             if (Array.isArray(item) && item.length === 2) {
-                const key = item[0]; // Tên môn hoặc tên tổng điểm
+                const key = item[0];
                 const scoreValue = parseFloat(item[1]);
-                scores[key] = isNaN(scoreValue) ? 0 : scoreValue; // Lưu điểm dạng số
+                scores[key] = isNaN(scoreValue) ? 0 : scoreValue;
             }
         });
         return scores;
@@ -333,71 +329,67 @@ function parseScoreLineForChart(line) {
 
 // Hàm xác định index của bin dựa vào điểm và cấu hình
 function getBinIndex(score, config) {
-    if (score === undefined || score === null || isNaN(score)) return -1; // Không có điểm hoặc điểm không hợp lệ
+    if (score === undefined || score === null || isNaN(score)) return -1;
 
     const [minRange, maxRange] = config.range;
     const numBins = config.bins;
 
-    // Xử lý đặc biệt cho thang 10 điểm (bin cuối cùng cho điểm 10)
     if (maxRange === 10 && numBins === 11) {
-        if (score < 0) return 0; // Điểm âm (nếu có) vào bin đầu
-        if (score >= 10) return 10; // Điểm 10 hoặc hơn vào bin cuối
-        return Math.max(0, Math.floor(score)); // 0-0.99 -> 0, 1-1.99 -> 1,... 9-9.99 -> 9
+        if (score < 0) return 0;
+        if (score >= 10) return 10;
+        return Math.max(0, Math.floor(score));
     }
 
     // Xử lý chung cho các thang điểm khác
     const binWidth = (maxRange - minRange) / numBins;
-    if (score <= minRange) return 0; // Điểm nhỏ hơn hoặc bằng min vào bin 0
-    if (score >= maxRange) return numBins - 1; // Điểm lớn hơn hoặc bằng max vào bin cuối
+    if (score <= minRange) return 0;
+    if (score >= maxRange) return numBins - 1;
 
     const index = Math.floor((score - minRange) / binWidth);
-    // Đảm bảo index nằm trong khoảng hợp lệ [0, numBins - 1]
     return Math.max(0, Math.min(index, numBins - 1));
 }
 
 
 // Hàm xử lý toàn bộ file score_data.txt để tạo dữ liệu cho biểu đồ
 async function processScoreDataForCharts() {
-    if (isChartDataProcessed || isProcessingChartData) return; // Chỉ xử lý 1 lần
+    if (isChartDataProcessed || isProcessingChartData) return;
     isProcessingChartData = true;
     chartLoadingIndicator.style.display = 'block';
     console.log("Bắt đầu xử lý dữ liệu biểu đồ...");
 
     try {
-        const response = await fetch('sorted_by_total_all.txt'); // Dùng file gốc hoặc file đã sắp xếp
+        const response = await fetch('sorted_by_total_all.txt');
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
         const data = await response.text();
         const lines = data.split('\n');
 
-        // Khởi tạo cấu trúc đếm
         const counts = {};
         for (const subjectKey in CHART_CONFIG) {
             counts[subjectKey] = new Array(CHART_CONFIG[subjectKey].bins).fill(0);
         }
 
-        // Duyệt qua từng dòng để đếm
         lines.forEach(line => {
-            const studentScores = parseScoreLineForChart(line); // Parse dòng
+            const studentScores = parseScoreLineForChart(line);
             if (studentScores) {
                 for (const subjectKey in CHART_CONFIG) {
                     const config = CHART_CONFIG[subjectKey];
-                    const score = studentScores[config.key]; // Lấy điểm môn/tổng tương ứng
+                    const score = studentScores[config.key];
                     const binIndex = getBinIndex(score, config);
-                    if (binIndex !== -1) { // Chỉ đếm nếu bin hợp lệ
+                    if (binIndex !== -1) {
                         counts[subjectKey][binIndex]++;
                     }
                 }
             }
         });
 
-        processedChartData = counts; // Lưu dữ liệu đã xử lý
+        processedChartData = counts;
         isChartDataProcessed = true;
         console.log("Xử lý dữ liệu biểu đồ hoàn tất.", processedChartData);
 
     } catch (error) {
         console.error("Lỗi nghiêm trọng khi xử lý dữ liệu biểu đồ:", error);
         alert("Không thể xử lý dữ liệu để tạo biểu đồ. Vui lòng kiểm tra file score_data.txt và thử lại.");
-        processedChartData = null; // Đặt lại nếu lỗi
+        processedChartData = null;
     } finally {
         isProcessingChartData = false;
         chartLoadingIndicator.style.display = 'none';
@@ -427,9 +419,8 @@ function createOrUpdateChart(subjectKey, highlightScore = null) {
     const dataCounts = processedChartData[subjectKey];
     const labels = config.labels;
     const defaultColor = 'rgba(75, 192, 192, 0.6)';
-    const highlightColor = 'rgba(255, 99, 132, 0.8)'; // Màu đỏ để làm nổi bật
+    const highlightColor = 'rgba(255, 99, 132, 0.8)';
 
-    // Xác định màu nền cho các cột
     const backgroundColors = new Array(config.bins).fill(defaultColor);
     let highlightBinIndex = -1;
     if (highlightScore !== null && highlightScore !== undefined && !isNaN(highlightScore)) {
@@ -444,15 +435,15 @@ function createOrUpdateChart(subjectKey, highlightScore = null) {
         datasets: [{
             label: 'Số lượng thí sinh',
             data: dataCounts,
-            backgroundColor: backgroundColors, // Mảng màu nền
-            borderColor: backgroundColors.map(color => color.replace('0.6', '1').replace('0.8', '1')), // Màu viền đậm hơn
+            backgroundColor: backgroundColors,
+            borderColor: backgroundColors.map(color => color.replace(/,?\s?0\.\d+\)/, ', 1)')),
             borderWidth: 1
         }]
     };
 
     const chartOptions = {
         responsive: true,
-        maintainAspectRatio: true, // Giữ tỉ lệ hoặc đặt false nếu muốn tự đặt kích thước
+        maintainAspectRatio: true,
         scales: {
             y: {
                 beginAtZero: true,
@@ -468,74 +459,74 @@ function createOrUpdateChart(subjectKey, highlightScore = null) {
                 }
             }
         },
+        animation: {
+            duration: 1000,
+            easing: 'easeOutQuart',
+        },
         plugins: {
             legend: {
-                display: false // Ẩn chú giải nếu chỉ có 1 dataset
+                display: false
             },
             tooltip: {
                 callbacks: {
-                    // title: function(tooltipItems) {
-                    //     // Có thể tùy chỉnh tiêu đề tooltip nếu muốn
-                    //     return `Khoảng điểm: ${tooltipItems[0].label}`;
-                    // },
                     label: function (context) {
                         let label = context.dataset.label || '';
-                        if (label) {
-                            label += ': ';
+                        if (label) { label += ': '; }
+                        if (context.parsed.y !== null) { label += `${context.parsed.y} thí sinh`; }
+
+                        let highlightBinIndex = -1;
+                        if (highlightScore !== null && highlightScore !== undefined && !isNaN(highlightScore)) {
+                            const config = CHART_CONFIG[subjectKey];
+                            highlightBinIndex = getBinIndex(highlightScore, config);
                         }
-                        if (context.parsed.y !== null) {
-                            label += `${context.parsed.y} thí sinh`;
-                        }
-                        // Thêm đánh dấu nếu đây là khoảng điểm của người dùng
-                        if (context.dataIndex === highlightBinIndex) {
-                            label += ' (Điểm của bạn)';
-                        }
+                        if (context.dataIndex === highlightBinIndex) { label += ' (Điểm của bạn)'; }
                         return label;
                     }
                 }
             }
-        },
-        animation: {
-            duration: 500 // Thời gian animation khi vẽ/cập nhật (ms)
         }
     };
 
-    // Kiểm tra nếu biểu đồ đã tồn tại thì cập nhật, nếu không thì tạo mới
-    if (window.scoreCharts[config.canvasId]) {
-        console.log(`Cập nhật biểu đồ: ${subjectKey}, Highlight score: ${highlightScore}, Highlight bin: ${highlightBinIndex}`);
-        window.scoreCharts[config.canvasId].data.datasets[0].data = dataCounts; // Cập nhật data count (mặc dù có thể không đổi)
-        window.scoreCharts[config.canvasId].data.datasets[0].backgroundColor = backgroundColors; // Cập nhật màu sắc
-        window.scoreCharts[config.canvasId].data.datasets[0].borderColor = backgroundColors.map(color => color.replace('0.6', '1').replace('0.8', '1'));
-        window.scoreCharts[config.canvasId].update();
+
+    const canvasId = CHART_CONFIG[subjectKey].canvasId;
+    if (window.scoreCharts[canvasId]) {
+
+        const chartInstance = window.scoreCharts[canvasId];
+        chartInstance.data.datasets[0].data = dataCounts;
+        chartInstance.data.datasets[0].backgroundColor = backgroundColors;
+        chartInstance.data.datasets[0].borderColor = backgroundColors.map(color => color.replace(/,?\s?0\.\d+\)/, ', 1)'));
+        chartInstance.update({
+            duration: 1000,
+            easing: 'easeOutQuart'
+        });
     } else {
-        console.log(`Tạo mới biểu đồ: ${subjectKey}, Highlight score: ${highlightScore}, Highlight bin: ${highlightBinIndex}`);
-        window.scoreCharts[config.canvasId] = new Chart(ctx, {
-            type: 'bar', // Loại biểu đồ cột
+
+        window.scoreCharts[canvasId] = new Chart(ctx, {
+            type: 'bar',
             data: chartData,
             options: chartOptions
         });
     }
 }
 
-// --- Hàm Tương tác ---
+
 
 // Hàm cập nhật tất cả các biểu đồ với điểm highlight
 function highlightChartsForStudent(studentScores) {
-    // Kiểm tra dữ liệu đầu vào cẩn thận hơn
+
     if (!isChartDataProcessed) {
         console.warn("Dữ liệu biểu đồ chưa được xử lý.");
         return;
     }
-    // Nếu studentScores là null (ví dụ: khi xóa highlight), lặp qua để xóa
+
     if (!studentScores) {
         console.log("Xóa highlight trên các biểu đồ.");
         for (const subjectKey in CHART_CONFIG) {
-            createOrUpdateChart(subjectKey, null); // Gọi với null để xóa highlight
+            createOrUpdateChart(subjectKey, null);
         }
         return;
     }
 
-    // Kiểm tra cấu trúc cơ bản của studentScores
     if (!studentScores.sbd || !studentScores.scores) {
         console.warn("Dữ liệu điểm của sinh viên không đầy đủ hoặc không hợp lệ.");
         return;
@@ -545,83 +536,97 @@ function highlightChartsForStudent(studentScores) {
 
     for (const subjectKey in CHART_CONFIG) {
         const config = CHART_CONFIG[subjectKey];
-        let score = null; // Khởi tạo score là null
+        let score = null;
 
-        // Lấy điểm dựa vào key cấu hình
-        const dataKey = config.key; // Ví dụ: 'Ngữ văn', 'Toán', 'Tổng các môn', ...
+        const dataKey = config.key;
 
         if (dataKey === 'Tổng các môn') {
-            score = studentScores.total5; // Lấy từ thuộc tính total5
+            score = studentScores.total5;
         } else if (dataKey === 'Tổng Toán, Văn, Anh') {
-            score = studentScores.total3; // Lấy từ thuộc tính total3
+            score = studentScores.total3;
         } else if (studentScores.scores.hasOwnProperty(dataKey)) {
-            // Đối với các môn học, lấy từ object lồng nhau 'scores'
+
             score = studentScores.scores[dataKey];
         } else {
             console.warn(`Không tìm thấy key điểm '${dataKey}' trong dữ liệu của SBD ${studentScores.sbd}`);
         }
 
-        // Đảm bảo chỉ truyền số hợp lệ hoặc null vào hàm vẽ biểu đồ
+
         const scoreToHighlight = (typeof score === 'number' && !isNaN(score)) ? score : null;
 
-        // Gọi hàm tạo/cập nhật biểu đồ với điểm số đã lấy được
         createOrUpdateChart(subjectKey, scoreToHighlight);
     }
 }
 
 // Thiết lập sự kiện cho nút Toggle
 function setupChartToggle() {
-    if (!toggleChartsButton) return;
+
+    if (!toggleChartsButton || !chartsContainer || !chartLoadingIndicator) {
+        console.error("Không tìm thấy các element cần thiết cho toggle biểu đồ.");
+        return;
+    }
 
     toggleChartsButton.addEventListener('click', async () => {
         const isVisible = chartsContainer.classList.contains('visible');
+        console.log(`Toggle button clicked. Currently visible: ${isVisible}`);
 
         if (!isVisible) {
-            // Nếu chưa xử lý data, xử lý trước khi hiển thị
+
             if (!isChartDataProcessed && !isProcessingChartData) {
+                chartLoadingIndicator.style.display = 'block';
                 await processScoreDataForCharts();
+                chartLoadingIndicator.style.display = 'none';
+
+                if (!isChartDataProcessed) {
+                    console.error("Xử lý dữ liệu biểu đồ thất bại.");
+                    alert("Không thể xử lý dữ liệu để tạo biểu đồ.");
+                    return;
+                }
+
+            } else if (isProcessingChartData) {
+                console.warn("Đang xử lý dữ liệu, vui lòng đợi...");
+                return;
             }
-            // Chỉ vẽ biểu đồ nếu xử lý data thành công
+
             if (isChartDataProcessed) {
-                // Vẽ tất cả biểu đồ lần đầu (không highlight)
-                for (const subjectKey in CHART_CONFIG) {
-                    // Chỉ tạo mới nếu chưa tồn tại
-                    if (!window.scoreCharts[CHART_CONFIG[subjectKey].canvasId]) {
-                        createOrUpdateChart(subjectKey, null);
+
+                const studentDataToHighlight = window.lastSearchedStudentData || null;
+
+                chartsContainer.classList.add('visible');
+
+                setTimeout(() => {
+                    for (const subjectKey in CHART_CONFIG) {
+                        let highlightScore = null;
+                        if (studentDataToHighlight) {
+                            const config = CHART_CONFIG[subjectKey];
+                            const dataKey = config.key;
+                            if (dataKey === 'Tổng các môn') {
+                                highlightScore = studentDataToHighlight.total5;
+                            } else if (dataKey === 'Tổng Toán, Văn, Anh') {
+                                highlightScore = studentDataToHighlight.total3;
+                            } else if (studentDataToHighlight.scores && studentDataToHighlight.scores.hasOwnProperty(dataKey)) {
+                                highlightScore = studentDataToHighlight.scores[dataKey];
+                            }
+                            highlightScore = (typeof highlightScore === 'number' && !isNaN(highlightScore)) ? highlightScore : null;
+                        }
+
+                        createOrUpdateChart(subjectKey, highlightScore);
                     }
-                }
-                chartsContainer.style.display = 'block'; // Đặt display trước khi thêm class để transition hoạt động
-                // Dùng timeout nhỏ để đảm bảo display được áp dụng
-                setTimeout(() => chartsContainer.classList.add('visible'), 10);
+                    console.log("Finished updating/creating charts.");
+                }, 50);
 
-                // Nếu đã có kết quả tìm kiếm trước đó, highlight luôn
-                // Bạn cần cách để truy cập điểm của thí sinh đã tra cứu gần nhất
-                // Ví dụ: Lưu vào biến global `lastSearchedStudentData` trong file index.js
-                if (typeof lastSearchedStudentData !== 'undefined' && lastSearchedStudentData) {
-                    highlightChartsForStudent(lastSearchedStudentData);
-                }
-
-            } else {
-                // Có thể hiển thị thông báo lỗi nếu data không xử lý được
-                alert("Không thể hiển thị biểu đồ do lỗi xử lý dữ liệu.");
             }
         } else {
-            // Ẩn container
+            console.log("Action: Hide charts");
             chartsContainer.classList.remove('visible');
-            // Có thể dùng event listener 'transitionend' để đặt lại display: none sau khi transition kết thúc
-            chartsContainer.addEventListener('transitionend', () => {
-                if (!chartsContainer.classList.contains('visible')) {
-                    chartsContainer.style.display = 'none';
-                }
-            }, { once: true }); // Chỉ chạy listener 1 lần
+
         }
     });
 }
 
-// --- Khởi tạo ---
 document.addEventListener('DOMContentLoaded', () => {
     setupChartToggle();
-    processScoreDataForCharts();
+
 });
 
 
