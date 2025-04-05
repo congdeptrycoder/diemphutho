@@ -48,6 +48,87 @@ h2 {
     padding-right: 5px;
 }
 
+.charts-section {
+    margin: 30px auto 0px auto;
+    width: 90%;
+}
+
+#toggle-charts-button {
+    padding: 10px 15px;
+    font-size: 1em;
+    cursor: pointer;
+    background-color: #468ead;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    transition: background-color 0.3s ease;
+}
+
+#toggle-charts-button:hover {
+    background-color: #0056b3;
+}
+
+/* Trạng thái ẩn ban đầu cho container */
+#charts-container {
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    margin-top: 20px;
+    /* Giữ lại margin nếu cần */
+    /* Thêm transition ở trạng thái cơ bản */
+    transition: opacity 0.5s ease-out, max-height 0.5s ease-out;
+    /* Không nên đặt display: none ở đây nếu muốn transition max-height hoạt động */
+    /* Thay vào đó, có thể dùng visibility: hidden; hoặc đợi transition xong mới display: none */
+    visibility: hidden;
+    /* Ẩn nhưng vẫn giữ không gian cho transition */
+}
+
+#charts-container.visible {
+    opacity: 1;
+    max-height: 5000px;
+    /* Đặt chiều cao đủ lớn */
+    overflow: visible;
+    /* Hoặc auto nếu cần thanh cuộn */
+    visibility: visible;
+}
+
+#charts-container h2 {
+    text-align: center;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+#charts-container p {
+    text-align: center;
+    margin-bottom: 25px;
+    color: #555;
+    font-style: italic;
+}
+
+
+.chart-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    /* Responsive grid */
+    gap: 30px;
+    /* Khoảng cách giữa các biểu đồ */
+}
+
+.chart-item {
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.chart-item h3 {
+    text-align: center;
+    margin-bottom: 15px;
+    font-size: 1.1em;
+    color: #444;
+}
+
 .content-container {
     margin-top: 30px;
     width: 90%;
@@ -74,7 +155,7 @@ h2 {
     background-color: rgb(227, 164, 164);
     border: none;
     border-radius: 5px;
-    transition: all ease-in-out 0.3s;
+    transition: all ease-out 0.3s;
 }
 
 .search-box input:focus {
@@ -124,7 +205,7 @@ h2 {
     border-radius: 5px;
     padding: 5px 10px;
     font-size: 16px;
-    transition: all ease-in-out 0.3s;
+    transition: all 0.3s ease-in-out;
     background-color: rgb(191, 242, 155);
 }
 
@@ -199,4 +280,7 @@ td {
         font-size: 20px;
     }
 
+    .chart-grid {
+        grid-template-columns: 1fr;
+    }
 }

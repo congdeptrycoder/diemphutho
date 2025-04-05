@@ -31,6 +31,48 @@
             <p><strong>Số điểm 10 Lịch sử và Địa lý</strong>: 1 học sinh</p>
         </div>
     </section>
+    <section class="charts-section">
+        <button id="toggle-charts-button">Hiển thị/Ẩn Biểu đồ Phân bố Điểm</button>
+
+        <div id="charts-container">
+            <h2>Phân bố điểm thi</h2>
+            <p>Biểu đồ thể hiện số lượng thí sinh đạt được các khoảng điểm khác nhau cho từng môn.</p>
+            <div id="chart-loading-indicator" style="display: none; padding: 20px; text-align: center;">
+                <i>Đang xử lý dữ liệu và vẽ biểu đồ...</i>
+            </div>
+
+            <div class="chart-grid">
+                <div class="chart-item">
+                    <h3>Phân bố điểm Ngữ Văn</h3>
+                    <canvas id="chart-van"></canvas>
+                </div>
+                <div class="chart-item">
+                    <h3>Phân bố điểm Toán</h3>
+                    <canvas id="chart-toan"></canvas>
+                </div>
+                <div class="chart-item">
+                    <h3>Phân bố điểm Tiếng Anh</h3>
+                    <canvas id="chart-ta"></canvas>
+                </div>
+                <div class="chart-item">
+                    <h3>Phân bố điểm KHTN</h3>
+                    <canvas id="chart-khtn"></canvas>
+                </div>
+                <div class="chart-item">
+                    <h3>Phân bố điểm LS&ĐL</h3>
+                    <canvas id="chart-ls"></canvas>
+                </div>
+                <div class="chart-item">
+                    <h3>Phân bố điểm Tổng 5 môn</h3>
+                    <canvas id="chart-total5"></canvas>
+                </div>
+                <div class="chart-item">
+                    <h3>Phân bố điểm Tổng Toán, Văn, Anh</h3>
+                    <canvas id="chart-total3"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
     <section class="content">
         <div class="content-container">
             <div class="before-header">
@@ -274,6 +316,7 @@
             </div>
             <div class="result-box">
                 <h2>Kết quả tìm kiếm</h3>
+                    <p><i>( Lướt lên trên để xem biểu đồ điểm thi của bạn ) </i></p>
                     <h3>Tổng số điểm 5 môn: <span id="sum5">30 điểm</span> </h3>
                     <table id="bang-diem">
                         <tr>
@@ -521,5 +564,6 @@
     </section>
 </body>
 <script src="index.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 </html>
