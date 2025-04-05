@@ -314,9 +314,23 @@
                 <span id="search-status" class="searching" style="display: none;">Đang tìm kiếm...</span>
                 <p id="error-msg" class="error-message" style="display: none;"></p>
             </div>
+
             <div class="result-box">
                 <h2>Kết quả tìm kiếm</h3>
                     <p><i>( Lướt lên trên để xem biểu đồ điểm thi của bạn ) </i></p>
+                    <div id="school-chart-container"
+                        style="display: none; margin-top: 15px; margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; background-color: #f9f9f9;">
+                        <div class="chart-item">
+                            <h3 style="text-align: center; margin-bottom: 10px;">Biểu đồ tổng điểm 3 môn tại điểm thi
+                                <span id="school-chart-title-code">---</span>
+                            </h3>
+                            <canvas id="chart-total3-school"></canvas>
+                            <p id="school-chart-nodata"
+                                style="text-align: center; display: none; color: gray; margin-top: 10px;"><i>Không có dữ
+                                    liệu
+                                    điểm TVA hợp lệ cho trường này.</i></p>
+                        </div>
+                    </div>
                     <h3>Tổng số điểm 5 môn: <span id="sum5">30 điểm</span> </h3>
                     <table id="bang-diem">
                         <tr>
@@ -338,6 +352,11 @@
                     <p>Xếp hạng theo tỉnh: <span id="rank5">1/24512</span></p>
                     <h3>Xếp hạng ( Xếp theo điểm 3 môn Toán,Văn,Anh )</h3>
                     <p>Xếp hạng theo tỉnh: <span id="rank3">1/24512</span></p>
+                    <p style="color: rgb(244, 100, 100);">Xếp hạng theo địa điểm thi (<span
+                            id="rank-school-code">---</span>):
+                        <span id="rank-school">-/--</span>
+                    </p>
+                    <h3>So sánh điểm chuẩn 2024</h3>
                     <h3>So sánh điểm chuẩn 2024</h3>
                     <p>(Tham khảo, điểm chuẩn đã cộng điểm vùng)</p>
                     <p>Tổng số điểm (Toán + Văn + Anh): <span id="sum3">30 điểm</span></p>

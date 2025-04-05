@@ -6,10 +6,11 @@ const sum5Span = document.getElementById('sum5');
 const sum3Span = document.getElementById('sum3');
 const searchStatus = document.getElementById('search-status');
 const errorMsgElement = document.getElementById('error-msg');
-
+const rankSchoolCodeSpan = document.getElementById('rank-school-code');
+const rankSchoolSpan = document.getElementById('rank-school');
 const rank5Span = document.getElementById('rank5');
 const rank3Span = document.getElementById('rank3');
-const totalStudents = 22137;
+const totalStudents = 24512;
 //làm sạch web
 function clearResults() {
 
@@ -31,7 +32,8 @@ function clearResults() {
         td.textContent = '';
         td.className = 'sosanh-diem';
     });
-
+    rankSchoolCodeSpan.textContent = '---';
+    rankSchoolSpan.textContent = '-/--';
     rank5Span.textContent = `-/${totalStudents}`;
     rank3Span.textContent = `-/${totalStudents}`;
 }
@@ -45,6 +47,8 @@ function displayError(message) {
 
     rank5Span.textContent = `-/${totalStudents}`;
     rank3Span.textContent = `-/${totalStudents}`;
+    rankSchoolCodeSpan.textContent = '---';
+    rankSchoolSpan.textContent = '-/--';
 }
 
 // Hàm tìm hạng trong file đã sắp xếp
@@ -177,6 +181,19 @@ searchButton.addEventListener('click', async () => {
     }
 
     clearResults();
+    // Quan trọng: Ẩn container biểu đồ trường khi bắt đầu tìm kiếm mới
+    if (schoolChartContainer) {
+        schoolChartContainer.style.display = 'none';
+        // Reset title và thông báo no data
+        if (schoolChartTitleCodeSpan) schoolChartTitleCodeSpan.textContent = '---';
+        if (schoolChartNoData) schoolChartNoData.style.display = 'none';
+        // Hủy biểu đồ cũ nếu có để tránh hiển thị nhầm lẫn
+        const canvasId = CHART_CONFIG['SchoolTVA']?.canvasId;
+        if (canvasId && window.scoreCharts[canvasId]) {
+            window.scoreCharts[canvasId].destroy();
+            delete window.scoreCharts[canvasId];
+        }
+    }
     searchStatus.style.display = 'inline';
 
     try {
@@ -217,26 +234,80 @@ searchButton.addEventListener('click', async () => {
 
 
             updateComparisonTable(studentData.total3);
+            searchStatus.textContent = 'Đang tìm xếp hạng...';
+
+            // --- Bước 3: Tìm xếp hạng tỉnh và trường song song ---
+            const schoolCode = sbdToSearch.substring(0, 3); // Lấy mã trường
+            console.log(`Extracted school code: '[${schoolCode}]', Type: ${typeof schoolCode}`);
+
+            rankSchoolCodeSpan.textContent = schoolCode; // Hiển thị mã trường
+
             try {
-                const [rank5Result, rank3Result] = await Promise.all([
-                    findRankInSortedFile('sorted_by_total_all.txt', sbdToSearch),
-                    findRankInSortedFile('sorted_by_total_tva.txt', sbdToSearch)
+                const [rank5ProvResult, rank3ProvResult, rankSchoolResult] = await Promise.all([
+                    findRankInSortedFile('sorted_by_total_all.txt', sbdToSearch), // Rank tỉnh 5 môn
+                    findRankInSortedFile('sorted_by_total_tva.txt', sbdToSearch), // Rank tỉnh 3 môn
+                    findRankInSchool(sbdToSearch, schoolCode)                   // Rank trong trường (3 môn)
                 ]);
 
+                // Cập nhật rank tỉnh
+                rank5Span.textContent = rank5ProvResult !== null ? `${rank5ProvResult}/${totalStudents}` : `Không tìm thấy/${totalStudents}`;
+                rank3Span.textContent = rank3ProvResult !== null ? `${rank3ProvResult}/${totalStudents}` : `Không tìm thấy/${totalStudents}`;
 
-                rank5Span.textContent = rank5Result !== null ? `${rank5Result}/${totalStudents}` : `Không tìm thấy/${totalStudents}`;
-                rank3Span.textContent = rank3Result !== null ? `${rank3Result}/${totalStudents}` : `Không tìm thấy/${totalStudents}`;
+                // Cập nhật rank trường
+                if (rankSchoolResult.error) {
+                    rankSchoolSpan.textContent = `Lỗi/-`;
+                } else {
+                    rankSchoolSpan.textContent = rankSchoolResult.rank !== null
+                        ? `${rankSchoolResult.rank}/${rankSchoolResult.total}`
+                        : `Không tìm thấy/${rankSchoolResult.total}`;
+                }
+
 
             } catch (rankError) {
                 console.error("Lỗi khi thực hiện tìm kiếm xếp hạng song song:", rankError);
                 rank5Span.textContent = `Lỗi/${totalStudents}`;
                 rank3Span.textContent = `Lỗi/${totalStudents}`;
+                rankSchoolSpan.textContent = `Lỗi/-`;
             }
             //result box
             resultBox.style.display = 'block';
-
             window.lastSearchedStudentData = studentData;
+            // 1. Đảm bảo dữ liệu cơ sở (allStudentData) đã được xử lý
+            // Chỉ xử lý nếu chưa có và không đang xử lý
+            if (!isChartDataProcessed && !isProcessingChartData) {
+                console.log("Base chart data not processed. Processing now for school chart...");
+                if (chartLoadingIndicator) chartLoadingIndicator.style.display = 'block';
+                try {
+                    await processScoreDataForCharts(); // Chờ xử lý xong
+                } catch (processError) {
+                    console.error("Error processing base chart data:", processError);
+                    // Có thể hiển thị thông báo lỗi hoặc chỉ log lỗi
+                } finally {
+                    if (chartLoadingIndicator) chartLoadingIndicator.style.display = 'none';
+                }
+            } else if (isProcessingChartData) {
+                // Nếu đang xử lý thì đợi hoặc bỏ qua lần này
+                console.warn("Base chart data is currently being processed. Please wait or try search again for school chart.");
+                // Có thể cần thêm logic đợi hoặc thông báo rõ hơn
+            }
 
+            // 2. Gọi hàm vẽ biểu đồ trường nếu dữ liệu cơ sở đã sẵn sàng
+            if (isChartDataProcessed) {
+                // Validation mã trường cơ bản (001-250) trước khi vẽ
+                const schoolCodePattern = /^(00[1-9]|0[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|250)$/;
+                if (schoolCodePattern.test(schoolCode)) {
+                    generateSchoolTvaChart(schoolCode); // Hàm này sẽ tự hiển thị container nếu thành công
+                } else {
+                    console.warn(`Invalid school code extracted: ${schoolCode}. Skipping school chart.`);
+                    // Không hiển thị container nếu mã trường không hợp lệ
+                    if (schoolChartContainer) schoolChartContainer.style.display = 'none';
+                }
+            } else {
+                console.warn("Base chart data not ready. Cannot generate school chart.");
+                // Đảm bảo container ẩn nếu xử lý data gốc lỗi
+                if (schoolChartContainer) schoolChartContainer.style.display = 'none';
+            }
+            // --- KẾT THÚC PHẦN VẼ BIỂU ĐỒ TRƯỜNG ---
 
             if (chartsContainer && chartsContainer.classList.contains('visible') && isChartDataProcessed) {
                 highlightChartsForStudent(studentData);
@@ -289,7 +360,11 @@ const CHART_CONFIG = {
     'KHTN': { file: 'score_data.txt', key: 'KHTN', bins: 11, range: [0, 10], labels: ["0-<1", "1-<2", "2-<3", "3-<4", "4-<5", "5-<6", "6-<7", "7-<8", "8-<9", "9-<10", "10"], canvasId: 'chart-khtn' },
     'LS&&ĐL': { file: 'score_data.txt', key: 'LS&&ĐL', bins: 11, range: [0, 10], labels: ["0-<1", "1-<2", "2-<3", "3-<4", "4-<5", "5-<6", "6-<7", "7-<8", "8-<9", "9-<10", "10"], canvasId: 'chart-ls' },
     'Tổng 5 môn': { file: 'score_data.txt', key: 'Tổng các môn', bins: 10, range: [0, 50], labels: ["0-5", "5-10", "10-15", "15-20", "20-25", "25-30", "30-35", "35-40", "40-45", "45-50"], canvasId: 'chart-total5' },
-    'Tổng 3 môn': { file: 'score_data.txt', key: 'Tổng Toán, Văn, Anh', bins: 10, range: [0, 30], labels: ["0-3", "3-6", "6-9", "9-12", "12-15", "15-18", "18-21", "21-24", "24-27", "27-30"], canvasId: 'chart-total3' }
+    'Tổng 3 môn': { file: 'sorted_by_total_all.txt', key: 'Tổng Toán, Văn, Anh', bins: 10, range: [0, 30], labels: ["0-3", "3-6", "6-9", "9-12", "12-15", "15-18", "18-21", "21-24", "24-27", "27-30"], canvasId: 'chart-total3' },
+    'SchoolTVA': {
+        key: 'Tổng Toán, Văn, Anh', bins: 10, range: [0, 30], labels: ["0-3", "3-6", "6-9", "9-12", "12-15", "15-18", "18-21", "21-24", "24-27", "27-30"], canvasId: 'chart-total3-school'
+    },
+
 };
 
 let processedChartData = null;
@@ -300,7 +375,9 @@ let isProcessingChartData = false;
 const chartsContainer = document.getElementById('charts-container');
 const toggleChartsButton = document.getElementById('toggle-charts-button');
 const chartLoadingIndicator = document.getElementById('chart-loading-indicator');
-
+const schoolChartContainer = document.getElementById('school-chart-container');
+const schoolChartTitleCodeSpan = document.getElementById('school-chart-title-code');
+const schoolChartNoData = document.getElementById('school-chart-nodata');
 
 function parseScoreLineForChart(line) {
     const firstCommaIndex = line.indexOf(',');
@@ -348,7 +425,26 @@ function getBinIndex(score, config) {
     const index = Math.floor((score - minRange) / binWidth);
     return Math.max(0, Math.min(index, numBins - 1));
 }
+function calculateCounts(dataToProcess, subjectKey) {
+    if (!dataToProcess || dataToProcess.length === 0 || !subjectKey || !CHART_CONFIG[subjectKey]) {
+        return null;
+    }
+    const config = CHART_CONFIG[subjectKey];
+    const counts = new Array(config.bins).fill(0);
+    let validDataCount = 0;
 
+    dataToProcess.forEach(studentScores => {
+        const score = studentScores[config.key]; // Lấy điểm môn/tổng tương ứng
+        const binIndex = getBinIndex(score, config); // Hàm getBinIndex giữ nguyên
+        if (binIndex !== -1) { // Chỉ đếm nếu bin hợp lệ
+            counts[binIndex]++;
+            validDataCount++;
+        }
+    });
+
+    console.log(`Calculated counts for ${subjectKey}:`, counts, `Valid data points: ${validDataCount}`);
+    return { counts, validDataCount };
+}
 
 // Hàm xử lý toàn bộ file score_data.txt để tạo dữ liệu cho biểu đồ
 async function processScoreDataForCharts() {
@@ -356,7 +452,7 @@ async function processScoreDataForCharts() {
     isProcessingChartData = true;
     chartLoadingIndicator.style.display = 'block';
     console.log("Bắt đầu xử lý dữ liệu biểu đồ...");
-
+    allStudentData = [];
     try {
         const response = await fetch('sorted_by_total_all.txt');
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
@@ -379,6 +475,7 @@ async function processScoreDataForCharts() {
                         counts[subjectKey][binIndex]++;
                     }
                 }
+                allStudentData.push(studentScores);
             }
         });
 
@@ -395,7 +492,58 @@ async function processScoreDataForCharts() {
         chartLoadingIndicator.style.display = 'none';
     }
 }
+// --- Hàm tạo biểu đồ cho trường cụ thể ---
+function generateSchoolTvaChart(schoolCode) {
+    if (!isChartDataProcessed) {
+        console.error("Dữ liệu gốc chưa được xử lý.");
 
+        return;
+    }
+    console.log(`Generating TVA chart for school: ${schoolCode}`);
+
+    // 1. Lọc dữ liệu của trường từ allStudentData
+    const schoolData = allStudentData.filter(student => student.sbd && student.sbd.startsWith(schoolCode));
+    console.log(`Found ${schoolData.length} students for school ${schoolCode}`);
+    console.log("School data:", schoolData);
+
+    // Ẩn/hiện thông báo không có data
+    schoolChartNoData.style.display = schoolData.length === 0 ? 'block' : 'none';
+
+
+    // 2. Tính toán dữ liệu đếm cho biểu đồ TVA của trường
+    const schoolTvaCountsResult = calculateCounts(schoolData, 'Tổng 3 môn'); // Dùng key 'SchoolTVA'
+
+    // 3. Cập nhật tiêu đề và vẽ biểu đồ
+    schoolChartTitleCodeSpan.textContent = schoolCode;
+    const schoolChartCanvasId = CHART_CONFIG['SchoolTVA'].canvasId; // Lấy ID canvas của biểu đồ trường
+    const schoolChartCanvas = document.getElementById(schoolChartCanvasId);
+    if (schoolTvaCountsResult && schoolTvaCountsResult.validDataCount > 0) {
+        if (!processedChartData) processedChartData = {}; // Khởi tạo nếu cần
+        // Sử dụng key 'SchoolTVA' để lưu trữ dữ liệu riêng cho biểu đồ trường
+        processedChartData['SchoolTVA'] = schoolTvaCountsResult.counts;
+        createOrUpdateChart('SchoolTVA', null);
+        if (schoolChartCanvas) schoolChartCanvas.style.display = 'block'; // Hiển thị canvas
+        schoolChartContainer.style.display = 'block'; // Hiển thị container biểu đồ trường
+        schoolChartNoData.style.display = 'none'; // Đảm bảo ẩn no data
+
+        // Tùy chọn: Cuộn tới biểu đồ trường
+        setTimeout(() => { schoolChartContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 100);
+    } else {
+        // Nếu không có dữ liệu hợp lệ, ẩn biểu đồ trường (nếu đang hiện) và xóa instance cũ
+        const schoolChartCanvas = document.getElementById('chart-total3-school');
+        if (schoolChartCanvas) schoolChartCanvas.style.display = 'none';
+        if (window.scoreCharts['chart-total3-school']) {
+            window.scoreCharts['chart-total3-school'].destroy();
+            delete window.scoreCharts['chart-total3-school'];
+        }
+        if (schoolData.length > 0) { // Có học sinh nhưng không có điểm TVA hợp lệ?
+            schoolChartErrorMsg.textContent = `Trường ${schoolCode} có ${schoolData.length} thí sinh nhưng không có dữ liệu điểm TVA hợp lệ để vẽ biểu đồ.`;
+            schoolChartErrorMsg.style.display = 'block';
+        }
+        // Nếu schoolData.length === 0 thì schoolChartNoData đã hiển thị
+        schoolChartContainer.style.display = 'block'; // Vẫn hiển thị container để thấy thông báo NoData/Error
+    }
+}
 // --- Hàm Tạo và Cập nhật Biểu đồ ---
 
 /**
@@ -627,6 +775,54 @@ function setupChartToggle() {
 document.addEventListener('DOMContentLoaded', () => {
     setupChartToggle();
 
+
 });
+//rank trường
+// --- Hàm tìm xếp hạng trong trường ---
+// (Hàm này cần file sorted_by_total_tva.txt đã sắp xếp theo điểm TVA)
+const findRankInSchool = async (sbdToFind, schoolCode) => {
+    if (!sbdToFind || !schoolCode) return { rank: null, total: 0 };
+
+    try {
+        const response = await fetch('sorted_by_total_tva.txt'); // File đã sắp xếp theo TVA
+        if (!response.ok) {
+            console.error(`Lỗi tải file xếp hạng TVA: ${response.status}`);
+            return { rank: null, total: 0, error: true };
+        }
+        const text = await response.text();
+        const lines = text.split('\n');
+        let rankInSchool = 0;
+        let totalInSchool = 0;
+        let found = false;
+
+        for (const line of lines) {
+            const trimmedLine = line.trim();
+            if (trimmedLine === '') continue;
+
+            const commaIndex = trimmedLine.indexOf(',');
+            if (commaIndex > 0) {
+                const lineSbd = trimmedLine.substring(0, commaIndex).trim();
+                // Kiểm tra xem SBD có thuộc trường không
+                if (lineSbd.startsWith(schoolCode)) {
+                    totalInSchool++; // Tăng tổng số HS trong trường
+                    // Nếu SBD này là SBD đang tìm
+                    if (lineSbd === sbdToFind) {
+                        rankInSchool = totalInSchool; // Thứ hạng chính là số thứ tự trong danh sách đã lọc và sắp xếp
+                        found = true;
+                        // Không break sớm để đếm hết tổng số HS trong trường
+                    }
+                }
+            }
+        }
+        // Trả về cả hạng và tổng số
+        return { rank: found ? rankInSchool : null, total: totalInSchool };
+
+    } catch (error) {
+        console.error(`Lỗi khi xử lý file xếp hạng TVA:`, error);
+        return { rank: null, total: 0, error: true };
+    }
+};
+//vẽ biểu đồ trường
+
 
 

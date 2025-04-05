@@ -165,6 +165,48 @@ h2 {
     background-color: rgb(191, 242, 155);
 }
 
+.school-search-box {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.school-search-box label {
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+#school-code-input {
+    padding: 8px;
+    margin-right: 5px;
+    width: 150px;
+    /* Điều chỉnh độ rộng */
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+#show-school-chart-button {
+    padding: 8px 15px;
+    cursor: pointer;
+    background-color: #28a745;
+    /* Màu xanh lá */
+    color: white;
+    border: none;
+    border-radius: 4px;
+}
+
+#school-chart-error-msg {
+    color: red;
+    font-size: 0.9em;
+    margin-top: 5px;
+}
+
+#school-chart-container {
+    margin-top: 20px;
+    width: 30%;
+    /* Style khác nếu cần */
+}
+
 .result-box {
     display: none;
     /* Ẩn đi cho đến khi có kết quả */
