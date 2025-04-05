@@ -313,7 +313,9 @@ td {
         border-right: none;
         padding: 0px;
     }
-
+    #school-chart-container {
+        width:100%;
+    }
     .review ul li i {
         padding: 5px 0px;
         font-size: 20px;
