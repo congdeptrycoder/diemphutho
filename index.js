@@ -308,7 +308,9 @@ searchButton.addEventListener('click', async () => {
                 if (schoolChartContainer) schoolChartContainer.style.display = 'none';
             }
             // --- KẾT THÚC PHẦN VẼ BIỂU ĐỒ TRƯỜNG ---
-
+            if (schoolChartContainer) {
+                highlightChartsForStudent(studentData);
+            }
             if (chartsContainer && chartsContainer.classList.contains('visible') && isChartDataProcessed) {
                 highlightChartsForStudent(studentData);
             }
@@ -336,20 +338,20 @@ const button105 = document.querySelector('.top105');
 const table105 = document.querySelector('.top105-table');
 
 button105.addEventListener('click', function () {
-    if (table105.style.display === 'block') {
+    if (table105.style.display === 'table') {
         table105.style.display = 'none';
     } else {
-        table105.style.display = 'block';
+        table105.style.display = 'table';
     }
 });
 const button103 = document.querySelector('.top103');
 const table103 = document.querySelector('.top103-table');
 
 button103.addEventListener('click', function () {
-    if (table103.style.display === 'block') {
+    if (table103.style.display === 'table') {
         table103.style.display = 'none';
     } else {
-        table103.style.display = 'block';
+        table103.style.display = 'table';
     }
 });
 //chart
